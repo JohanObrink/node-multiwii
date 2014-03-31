@@ -8,11 +8,13 @@ var chai = require('chai'),
 chai.use(require('sinon-chai'));
 
 describe('MultiWii', function () {
-  var Wii, serialport, sandbox, clock, port;
+  var Wii, serialport, sandbox, port;
   beforeEach(function () {
     port = {
       on: sinon.stub(),
-      off: sinon.stub()
+      removeListener: sinon.stub(),
+      write: sinon.stub(),
+      close: sinon.spy()
     };
     serialport = {
       list: sinon.stub(),
@@ -26,7 +28,6 @@ describe('MultiWii', function () {
     });
     sandbox = sinon.sandbox.create();
     sandbox.stub(process, 'nextTick').yields();
-    clock = sandbox.useFakeTimers();
   });
   afterEach(function () {
     sandbox.restore();
@@ -197,7 +198,7 @@ describe('MultiWii', function () {
       wii.connect('/dev/derp').then(success).catch(fail);
       var _onError = wii._onError;
       port.on.withArgs('error').yield('bork');
-      expect(port.off).calledWith('error', _onError);
+      expect(port.removeListener).calledWith('error', _onError);
       expect(wii._onError).to.not.exist;
     });
     it('rejects promise on error', function () {
@@ -230,7 +231,7 @@ describe('MultiWii', function () {
       });
 
       it('clears and removes connect listener', function () {
-        expect(port.off).calledWith('open', _onConnect);
+        expect(port.removeListener).calledWith('open', _onConnect);
         expect(wii._onConnect).to.not.exist;
       });
 
@@ -260,8 +261,8 @@ describe('MultiWii', function () {
           expect(wii.connected).to.be.false;
         });
         it('clears listeners', function () {
-          expect(port.off).calledWith('error', wii.onError);
-          expect(port.off).calledWith('data', wii.onData);
+          expect(port.removeListener).calledWith('error', wii.onError);
+          expect(port.removeListener).calledWith('data', wii.onData);
         });
       });
 
@@ -280,6 +281,24 @@ describe('MultiWii', function () {
           expect(listener).calledWith(buffer);
         });
       });
+    
+      describe('#send', function () {
+        it('sends out messages correctly', function () {
+          wii.send(105);
+          var expected = new Buffer([0x24, 0x4D, 0x3C, 0, 105, 105, 0]).toString();
+          var sent = port.write.args[0].toString();
+
+          expect(sent).to.eql(expected);
+        });
+      });
+
+      describe('#calculateChecksum', function () {
+        it('can calculate the checksum', function () {
+          var checksum = wii.calculateChecksum([0x24, 0x4d, 0x3e, 0x0a, 0x65, 0x28, 0x0b, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00]);
+          expect(checksum).to.equal(0x6d);
+        });
+      });
+
     });
   });
 });
