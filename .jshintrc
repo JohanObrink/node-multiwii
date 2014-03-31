@@ -13,5 +13,13 @@
   "smarttabs": true,
   "node": true,
   "esnext": true,
-  "maxcomplexity": 4
+  "maxcomplexity": 6,
+  "globals": {
+    "describe": true,
+    "before": true,
+    "beforeEach": true,
+    "after": true,
+    "afterEach": true,
+    "it": true
+  }
 }

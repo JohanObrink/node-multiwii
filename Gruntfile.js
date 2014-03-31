@@ -9,7 +9,7 @@ module.exports = function (grunt) {
         reporter: require('jshint-stylish'),
         jshintrc: '.jshintrc'
       },
-      files: ['index.js','lib/**/*.js']
+      files: ['index.js','lib/**/*.js', 'test/**/*.js']
     },
 
     mochaTest: {
