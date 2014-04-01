@@ -7,7 +7,7 @@ var chai = require('chai'),
 
 chai.use(require('sinon-chai'));
 
-describe('messages', function () {
+describe('\u2b50  messages', function () {
   var Wii, serialport, sandbox, port, wii;
   beforeEach(function () {
     port = {

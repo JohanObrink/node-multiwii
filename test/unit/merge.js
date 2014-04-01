@@ -2,7 +2,7 @@ var chai = require('chai'),
   expect = chai.expect,
   merge = require('../../lib/merge');
 
-describe('merge', function () {
+describe('\u2b50  merge', function () {
 
   var defaults;
 

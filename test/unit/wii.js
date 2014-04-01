@@ -7,7 +7,7 @@ var chai = require('chai'),
 
 chai.use(require('sinon-chai'));
 
-describe('MultiWii', function () {
+describe('\u2b50  MultiWii', function () {
   var Wii, serialport, sandbox, port;
   beforeEach(function () {
     port = {
