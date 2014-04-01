@@ -16,8 +16,11 @@ module.exports = function (grunt) {
       options: {
         reporter: 'Spec'
       },
-      test: {
+      unit: {
         src: ['test/unit/**/*.js']
+      },
+      integration: {
+        src: ['test/integration/**/*.js']
       }
     },
 
@@ -34,6 +37,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-mocha-test');
 
-  grunt.registerTask('test', ['jshint', 'mochaTest']);
+  grunt.registerTask('test', ['jshint', 'mochaTest:unit']);
   grunt.registerTask('default', ['test', 'watch'])
 };
