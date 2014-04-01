@@ -1,5 +1,5 @@
-node-multiwii
-=============
+node-multiwii (pre alpha!)
+===========================
 
 A library for sending and parsing messages to/from a MultiWii device using Node.js
 
