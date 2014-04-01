@@ -285,8 +285,8 @@ describe('MultiWii', function () {
       describe('#send', function () {
         it('sends out messages correctly', function () {
           wii.send(105);
-          var expected = new Buffer([0x24, 0x4D, 0x3C, 0, 105, 105, 0]).toString();
-          var sent = port.write.args[0].toString();
+          var expected = Array.prototype.slice.call(new Buffer([0x24, 0x4D, 0x3C, 0, 105, 105, 0]));
+          var sent = Array.prototype.slice.call(port.write.getCall(0).args[0]);
 
           expect(sent).to.eql(expected);
         });
@@ -294,8 +294,18 @@ describe('MultiWii', function () {
 
       describe('#calculateChecksum', function () {
         it('can calculate the checksum', function () {
-          var checksum = wii.calculateChecksum([0x24, 0x4d, 0x3e, 0x0a, 0x65, 0x28, 0x0b, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00]);
+          var buffer = new Buffer(40);
+          var data = new Buffer([0x24, 0x4d, 0x3e, 0x0a, 0x65, 0x28, 0x0b, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00]);
+          data.copy(buffer, 0);
+          var checksum = wii.calculateChecksum(buffer);
           expect(checksum).to.equal(0x6d);
+        });
+        it('can calculate another checksum', function () {
+          var buffer = new Buffer(40);
+          var data = new Buffer([0x24, 0x4D, 0x3C, 0, 105]);
+          data.copy(buffer, 0);
+          var checksum = wii.calculateChecksum(buffer);
+          expect(checksum).to.equal(105);
         });
       });
 
