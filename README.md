@@ -10,10 +10,11 @@ npm install multiwii
 
 ###Use
 ```javascript
-var Wii = require('wii').Wii;
+var multiwii = require('multiwii');
+var Wii = multiwii.Wii;
 var wii = new Wii();
 
-Wii.list().then(function (devices) {
+multiwii.list().then(function (devices) {
   devices.forEach(function (device) {
     if(device.productId === '0x8036') { // NanoWii
       wii.connect(device).then(function () {

@@ -8,7 +8,7 @@ var chai = require('chai'),
 chai.use(require('sinon-chai'));
 
 describe('\u2b50  MultiWii', function () {
-  var Wii, serialport, sandbox, port;
+  var multiwii, Wii, serialport, sandbox, port;
   beforeEach(function () {
     port = {
       on: sinon.stub(),
@@ -23,9 +23,10 @@ describe('\u2b50  MultiWii', function () {
       },
       SerialPort: sinon.stub().returns(port)
     };
-    Wii = proxyquire('../../lib/wii', {
+    multiwii = proxyquire('../../lib/wii', {
       'serialport': serialport
     });
+    Wii = multiwii.Wii;
     sandbox = sinon.sandbox.create();
     sandbox.stub(process, 'nextTick').yields();
   });
@@ -65,26 +66,26 @@ describe('\u2b50  MultiWii', function () {
     });
   });
 
-  describe('Wii.list', function () {
+  describe('list', function () {
     it('calls serialport to list available devices', function () {
       var listener = sinon.spy();
-      Wii.list(listener);
+      multiwii.list(listener);
       expect(serialport.list).calledOnce;
     });
     it('calls callback with error on fail', function () {
       var listener = sinon.spy();
-      Wii.list(listener);
+      multiwii.list(listener);
       serialport.list.yield('error');
       expect(listener).calledWith('error');
     });
     it('calls callback with list on success', function () {
       var listener = sinon.spy();
-      Wii.list(listener);
+      multiwii.list(listener);
       serialport.list.yield(null, []);
       expect(listener).calledWith(null, []);
     });
     it('returns a promise if no callback is passed in', function () {
-      var promise = Wii.list();
+      var promise = multiwii.list();
       expect(promise).to.be.an('object');
       expect(promise.then).to.be.a('function');
       expect(promise.catch).to.be.a('function');
@@ -93,7 +94,7 @@ describe('\u2b50  MultiWii', function () {
     it('resolves the promise when serialport.list succeeds', function () {
       var success = sinon.spy();
       var fail = sinon.spy();
-      Wii.list().then(success).catch(fail);
+      multiwii.list().then(success).catch(fail);
       serialport.list.yield(null, []);
       expect(success).called;
       expect(success).calledWith([]);
@@ -102,7 +103,7 @@ describe('\u2b50  MultiWii', function () {
     it('rejects the promise when serialport.list fails', function () {
       var success = sinon.spy();
       var fail = sinon.spy();
-      Wii.list().then(success).catch(fail);
+      multiwii.list().then(success).catch(fail);
       serialport.list.yield('error');
       expect(success).not.called;
       expect(fail).calledWith('error');

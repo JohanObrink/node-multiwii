@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports.Wii = require('./lib/wii');
+module.exports = require('./lib/wii');

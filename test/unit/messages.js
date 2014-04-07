@@ -8,7 +8,7 @@ var chai = require('chai'),
 chai.use(require('sinon-chai'));
 
 describe('\u2b50  messages', function () {
-  var Wii, serialport, sandbox, port, wii;
+  var Wii, multiwii, serialport, sandbox, port, wii;
   beforeEach(function () {
     port = {
       on: sinon.stub(),
@@ -21,9 +21,10 @@ describe('\u2b50  messages', function () {
       },
       SerialPort: sinon.stub().returns(port)
     };
-    Wii = proxyquire('../../lib/wii', {
+    multiwii = proxyquire('../../lib/wii', {
       'serialport': serialport
     });
+    Wii = multiwii.Wii;
     sandbox = sinon.sandbox.create();
 
     wii = new Wii();
@@ -38,11 +39,12 @@ describe('\u2b50  messages', function () {
     it('parses the message correctly', function () {
       var listener = sinon.spy();
       wii.on('ident', listener);
-      port.on.withArgs('data').yield(new Buffer([0, 0, 0, 3, 100, 2, 1, 0]));
+      port.on.withArgs('data').yield(new Buffer([0, 0, 0, 7, 100, 2, 1, 1, 0, 0, 0, 0]));
       expect(listener).calledWith({
         version: 2,
         multitype: 'TRI',
-        subversion: 0
+        mspVersion: 1,
+        capability: 0
       });
     });
   });
@@ -85,17 +87,53 @@ describe('\u2b50  messages', function () {
       var listener = sinon.spy();
       wii.on('status', listener);
       port.on.withArgs('data').yield(new Buffer([0, 0, 0, 11, 101,
-        0, 1, // cycleTime
-        1, 1, // i2cErrorCount
-        2, 1, // accBaro
-        3, 1, 0, 0 // dafuq
+        0, 1,       // cycleTime
+        1, 1,       // i2cErrorCount
+        2, 1,       // sensor
+        3, 1, 0, 0  // flags
       ]));
       expect(listener).calledWith({
         cycleTime: 256,
         i2cErrorCount: 257,
-        accBaro: 258,
-        dafuq: 259
+        sensor: 258,
+        flags: 259
       });
+    });
+  });
+
+  describe('servo', function () {
+    it('parses the message correctly', function () {
+      var listener = sinon.spy();
+      wii.on('servo', listener);
+      port.on.withArgs('data').yield(new Buffer([0, 0, 0, 16, 103,
+        0, 1,       // servo[0]
+        1, 1,       // servo[1]
+        2, 1,       // servo[2]
+        3, 1,       // servo[3]
+        4, 1,       // servo[4]
+        5, 1,       // servo[5]
+        6, 1,       // servo[6]
+        7, 1        // servo[7]
+      ]));
+      expect(listener).calledWith([256, 257, 258, 259, 260, 261, 262, 263]);
+    });
+  });
+
+  describe('motor', function () {
+    it('parses the message correctly', function () {
+      var listener = sinon.spy();
+      wii.on('motor', listener);
+      port.on.withArgs('data').yield(new Buffer([0, 0, 0, 16, 104,
+        0, 1,       // motor[0]
+        1, 1,       // motor[1]
+        2, 1,       // motor[2]
+        3, 1,       // motor[3]
+        4, 1,       // motor[4]
+        5, 1,       // motor[5]
+        6, 1,       // motor[6]
+        7, 1        // motor[7]
+      ]));
+      expect(listener).calledWith([256, 257, 258, 259, 260, 261, 262, 263]);
     });
   });
   
