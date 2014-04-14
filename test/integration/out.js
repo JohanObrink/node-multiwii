@@ -91,7 +91,7 @@ describe('MultiWii', function () {
       wii.read('altitude');
     });
 
-    it.only('can read attitude values', function (done) {
+    it('can read attitude values', function (done) {
       wii.once('attitude', function (data) {
         log(data);
         expect(data).to.have.keys(['angles', 'heading', 'headFreeModeHold']);
@@ -127,7 +127,7 @@ describe('MultiWii', function () {
       wii.read('compGPS');
     });
 
-    xit('can read misc values', function (done) {
+    it('can read misc values', function (done) {
       wii.once('misc', function (data) {
         log(data);
         expect(data).to.have.keys(['powerTrigger']);
@@ -136,7 +136,7 @@ describe('MultiWii', function () {
       wii.read('misc');
     });
 
-    xit('can read motorPins', function (done) {
+    it('can read motorPins', function (done) {
       wii.once('motorPins', function (data) {
         log(data);
         expect(data).to.be.instanceof(Array).with.length(8);
@@ -145,7 +145,7 @@ describe('MultiWii', function () {
       wii.read('motorPins');
     });
 
-    xit('can read pid values', function (done) {
+    it('can read pid values', function (done) {
       wii.once('pid', function (data) {
         log(data);
         expect(data).to.have.keys(['p8', 'i8', 'd8']);
@@ -163,7 +163,7 @@ describe('MultiWii', function () {
       wii.read('rawGPS');
     });
 
-    xit('can read rawImu values', function (done) {
+    it('can read rawImu values', function (done) {
       wii.once('rawImu', function (data) {
         log(data);
         expect(data).to.have.keys(['accSmooth', 'gyroData', 'magADC']);
@@ -172,7 +172,7 @@ describe('MultiWii', function () {
       wii.read('rawImu');
     });
 
-    xit('can read rcTuning values', function (done) {
+    it('can read rcTuning values', function (done) {
       wii.once('rcTuning', function (data) {
         log(data);
         expect(data).to.have.keys(['rcRate', 'rcExpo', 'rollPitchRate', 'yawRate', 'dynThrPID', 'thrMid', 'thrExpo']);
@@ -211,6 +211,33 @@ describe('MultiWii', function () {
       wii
         .setRawRc(roll, pitch, yaw, throttle, aux1, aux2, aux3, aux4)
         .then(function () {  wii.read('rc'); })
+        .catch(done);
+    });
+
+    it('can set acc calibration', function (done) {
+      this.timeout(2600);
+
+      var roll = 1300,
+        pitch = 1100,
+        yaw = 900,
+        throttle = 1200,
+        aux1 = 1100,
+        aux2 = 1300,
+        aux3 = 1700,
+        aux4 = 1650;
+
+      wii.once('rawImu', function (data) {
+        log(data);
+        done();
+      });
+
+      wii
+        .setAccCalibration()
+        .then(function () {
+          setTimeout(function () {
+            wii.read('rawImu');
+          }, 2500);
+        })
         .catch(done);
     });
   });
