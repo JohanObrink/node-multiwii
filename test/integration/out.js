@@ -15,7 +15,7 @@ describe('MultiWii', function () {
       //console.log(data);
     });
     log = function () {
-      //console.log.apply(console, Array.prototype.slice.call(arguments));
+      console.log.apply(console, Array.prototype.slice.call(arguments));
     };
 
     multiwii.list().then(function (ports) {
@@ -36,7 +36,7 @@ describe('MultiWii', function () {
     wii.dispose();
   });
 
-  describe('read rc', function () {
+  describe('read values', function () {
     it('can read rc values', function (done) {
       wii.once('rc', function (data) {
         log(data);
@@ -45,9 +45,7 @@ describe('MultiWii', function () {
       });
       wii.read('rc');
     });
-  });
 
-  describe('read status', function () {
     it('can read status values', function (done) {
       wii.once('status', function (data) {
         log(data);
@@ -56,9 +54,7 @@ describe('MultiWii', function () {
       });
       wii.read('status');
     });
-  });
 
-  describe('read ident', function () {
     it('can read ident values', function (done) {
       wii.once('ident', function (data) {
         log(data);
@@ -67,9 +63,7 @@ describe('MultiWii', function () {
       });
       wii.read('ident');
     });
-  });
 
-  describe('read servo', function () {
     it('can read servo values', function (done) {
       wii.once('servo', function (data) {
         log(data);
@@ -78,9 +72,7 @@ describe('MultiWii', function () {
       });
       wii.read('servo');
     });
-  });
 
-  describe('read motor', function () {
     it('can read motor values', function (done) {
       wii.once('motor', function (data) {
         log(data);
@@ -88,6 +80,105 @@ describe('MultiWii', function () {
         done();
       });
       wii.read('motor');
+    });
+
+    it('can read altitude values', function (done) {
+      wii.once('altitude', function (data) {
+        log(data);
+        expect(data).to.have.keys(['estimatedAltitude']);
+        done();
+      });
+      wii.read('altitude');
+    });
+
+    it.only('can read attitude values', function (done) {
+      wii.once('attitude', function (data) {
+        log(data);
+        expect(data).to.have.keys(['angles', 'heading', 'headFreeModeHold']);
+        done();
+      });
+      wii.read('attitude');
+    });
+
+    it('can read bat values', function (done) {
+      wii.once('bat', function (data) {
+        log(data);
+        expect(data).to.have.keys(['vbat', 'intPowerMeterSum']);
+        done();
+      });
+      wii.read('bat');
+    });
+
+    xit('can read box values', function (done) {
+      wii.once('box', function (data) {
+        log(data);
+        expect(data).to.have.keys(['ACC', 'BARO', 'MAG', 'CAMSTAB', 'CAMTRIG', 'ARM', 'GPS HOME', 'GPS HOLD', 'PASSTHRU', 'HEADFREE', 'BEEPER', 'LEDMAX', 'LLIGHTS', 'HEADADJ']);
+        done();
+      });
+      wii.read('box');
+    });
+
+    xit('can read compGPS values', function (done) {
+      wii.once('compGPS', function (data) {
+        log(data);
+        expect(data).to.have.keys(['distanceToHome', 'directionToHome', 'update']);
+        done();
+      });
+      wii.read('compGPS');
+    });
+
+    xit('can read misc values', function (done) {
+      wii.once('misc', function (data) {
+        log(data);
+        expect(data).to.have.keys(['powerTrigger']);
+        done();
+      });
+      wii.read('misc');
+    });
+
+    xit('can read motorPins', function (done) {
+      wii.once('motorPins', function (data) {
+        log(data);
+        expect(data).to.be.instanceof(Array).with.length(8);
+        done();
+      });
+      wii.read('motorPins');
+    });
+
+    xit('can read pid values', function (done) {
+      wii.once('pid', function (data) {
+        log(data);
+        expect(data).to.have.keys(['p8', 'i8', 'd8']);
+        done();
+      });
+      wii.read('pid');
+    });
+
+    xit('can read rawGPS values', function (done) {
+      wii.once('rawGPS', function (data) {
+        log(data);
+        expect(data).to.have.keys(['fix', 'numSat', 'lat', 'lon', 'altitude', 'speed']);
+        done();
+      });
+      wii.read('rawGPS');
+    });
+
+    xit('can read rawImu values', function (done) {
+      wii.once('rawImu', function (data) {
+        log(data);
+        expect(data).to.have.keys(['accSmooth', 'gyroData', 'magADC']);
+        done();
+      });
+      wii.read('rawImu');
+    });
+
+    xit('can read rcTuning values', function (done) {
+      wii.once('rcTuning', function (data) {
+        log(data);
+        expect(data).to.have.keys(['rcRate', 'rcExpo', 'rollPitchRate', 'yawRate', 'dynThrPID', 'thrMid', 'thrExpo']);
+        done();
+      });
+      wii.read('rcTuning');
     });
   });
 
