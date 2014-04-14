@@ -16,10 +16,12 @@
   "maxcomplexity": 6,
   "globals": {
     "describe": true,
+    "xdescribe": true,
     "before": true,
     "beforeEach": true,
     "after": true,
     "afterEach": true,
-    "it": true
+    "it": true,
+    "xit": true
   }
 }
