@@ -1,6 +1,6 @@
 {
   "name": "multiwii",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A library for sending and parsing messages to/from a MultiWii device using Node.js",
   "main": "index.js",
   "scripts": {
