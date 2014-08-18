@@ -11,12 +11,13 @@ describe('MultiWii', function () {
   before(function (done) {
     wii = new Wii();
 
-    wii.on('data', function (data) {
-      //console.log(data);
-    });
     log = function () {
-      console.log.apply(console, Array.prototype.slice.call(arguments));
+      //console.log.apply(console, Array.prototype.slice.call(arguments));
     };
+
+    wii.on('data', function (data) {
+      log(data);
+    });
 
     multiwii.list().then(function (ports) {
       var devices = ports.filter(function (port) {
@@ -148,7 +149,55 @@ describe('MultiWii', function () {
     it('can read pid values', function (done) {
       wii.once('pid', function (data) {
         log(data);
-        expect(data).to.have.keys(['p8', 'i8', 'd8']);
+
+        expect(data).to.have.keys([
+          'roll',
+          'pitch',
+          'yaw',
+          'alt',
+          'pos',
+          'posr',
+          'navr',
+          'level',
+          'mag'
+        ]);
+
+        expect(data.roll).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 40, i: 30, d: 23 });
+
+        expect(data.pitch).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 40, i: 30, d: 23 });
+
+        expect(data.yaw).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 85, i: 45, d: 0 });
+
+        expect(data.alt).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 16, i: 15, d: 7 });
+
+        expect(data.pos).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 11, i: 0, d: 0 });
+
+        expect(data.posr).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 20, i: 8, d: 45 });
+
+        expect(data.navr).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 14, i: 20, d: 80 });
+
+        expect(data.level).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 70, i: 10, d: 100 });
+
+        expect(data.mag).to
+          .have.keys(['p', 'i', 'd'])
+          .and.eql({ p: 40, i: 11, d: 0 });
+
         done();
       });
       wii.read('pid');
@@ -239,6 +288,63 @@ describe('MultiWii', function () {
           }, 2500);
         })
         .catch(done);
+    });
+
+    it('can set pids', function (done) {
+      var defaultValues = {
+        roll: { p: 40, i: 30, d: 23 },
+        pitch: { p: 40, i: 30, d: 23 },
+        yaw: { p: 85, i: 45, d: 0 },
+        alt: { p: 16, i: 15, d: 7 },
+        pos: { p: 11, i: 0, d: 0 },
+        posr: { p: 20, i: 8, d: 45 },
+        navr: { p: 14, i: 20, d: 80 },
+        level: { p: 70, i: 10, d: 100 },
+        mag: { p: 40, i: 11, d: 0 }
+      };
+      var testValues = {
+        roll: { p: 30, i: 36, d: 25 },
+        pitch: { p: 50, i: 28, d: 24 },
+        yaw: { p: 70, i: 41, d: 3 },
+        alt: { p: 12, i: 17, d: 9 },
+        pos: { p: 18, i: 2, d: 1 },
+        posr: { p: 23, i: 9, d: 47 },
+        navr: { p: 16, i: 22, d: 82 },
+        level: { p: 68, i: 12, d: 95 },
+        mag: { p: 45, i: 13, d: 6 }
+      };
+
+      wii.once('pid', function (data) {
+        log(data);
+        expect(data).to.eql(testValues);
+
+        // reset
+        wii.setPid(
+          defaultValues.roll,
+          defaultValues.pitch,
+          defaultValues.yaw,
+          defaultValues.alt,
+          defaultValues.pos,
+          defaultValues.posr,
+          defaultValues.navr,
+          defaultValues.level,
+          defaultValues.mag
+        );
+
+        done();
+      });
+
+      wii.setPid(
+        testValues.roll,
+        testValues.pitch,
+        testValues.yaw,
+        testValues.alt,
+        testValues.pos,
+        testValues.posr,
+        testValues.navr,
+        testValues.level,
+        testValues.mag
+      ).then(function () { wii.read('pid'); }).catch(done);
     });
   });
 });
