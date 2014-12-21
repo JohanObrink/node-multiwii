@@ -20,11 +20,7 @@ describe('\u2b50  messages', function () {
       close: sinon.spy()
     };
     sandbox = sinon.sandbox.create();
-    console.log("ere");
     wii = new Wii(proxyConnection);
-    console.log("jere");
-    proxyConnection.on.withArgs('open').yield();
-    console.log("tere");
   });
 
 
