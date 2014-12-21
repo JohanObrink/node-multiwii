@@ -32,8 +32,6 @@
   },
   "homepage": "https://github.com/JohanObrink/node-multiwii",
   "dependencies": {
-    "q": "~1.0.1",
-    "when": "^3.6.4"
   },
   "devDependencies": {
     "sinon-chai": "~2.5.0",
