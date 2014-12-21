@@ -2,13 +2,15 @@
 
 var chai = require('chai'),
   expect = chai.expect,
-  sinon = require('sinon'),
-  proxyquire = require('proxyquire');
+  sinon = require('sinon');
 
 chai.use(require('sinon-chai'));
 
 describe('\u2b50  messages', function () {
+
+
   var Wii, multiwii, serialport, sandbox, port, wii;
+
   beforeEach(function () {
     port = {
       on: sinon.stub(),
@@ -21,16 +23,15 @@ describe('\u2b50  messages', function () {
       },
       SerialPort: sinon.stub().returns(port)
     };
-    multiwii = proxyquire('../../lib/wii', {
-      'serialport': serialport
-    });
-    Wii = multiwii.Wii;
+    Wii = multiwii;
     sandbox = sinon.sandbox.create();
 
     wii = new Wii();
     wii.connect('/dev/mupp');
     port.on.withArgs('open').yield();
   });
+
+
   afterEach(function () {
     sandbox.restore();
   });
@@ -136,5 +137,5 @@ describe('\u2b50  messages', function () {
       expect(listener).calledWith([256, 257, 258, 259, 260, 261, 262, 263]);
     });
   });
-  
+
 });
