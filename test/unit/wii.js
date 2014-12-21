@@ -8,9 +8,7 @@ var chai = require('chai'),
 chai.use(require('sinon-chai'));
 
 describe('\u2b50  MultiWii', function () {
-
-
-  var sandbox, proxyConnection, proxyConnection;
+  var sandbox, proxyConnection;
   beforeEach(function () {
     proxyConnection = {
       on: sinon.stub(),
@@ -59,7 +57,7 @@ describe('\u2b50  MultiWii', function () {
       wii = new Wii(proxyConnection);
     });
     afterEach(function () {
-      delete wii;
+      wii = null;
     });
 
     describe('\u26a1 data', function () {
