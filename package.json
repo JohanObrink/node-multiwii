@@ -1,7 +1,7 @@
 {
   "name": "multiwii",
-  "version": "0.1.0",
-  "description": "A library for sending and parsing messages to/from a MultiWii device using Node.js",
+  "version": "1.0.0",
+  "description": "A library for sending and parsing messages to/from a MultiWii device using Node.js. It is now implemented such that it will use whatever stream you provide it instead of specifically requiring a serialport.",
   "main": "index.js",
   "scripts": {
     "test": "grunt test"
@@ -14,7 +14,15 @@
     "multiwii",
     "copter"
   ],
-  "author": "Johan Öbrink <johan.obrink@gmail.com>",
+  "author": [{
+    "name": "Johan Öbrink",
+    "email": "johan.obrink@gmail.com",
+    "url": "http://terminaln00b.tumblr.com/"
+  },{
+    "name": "Chris Williams",
+    "email": "voodootikigod@gmail.com",
+    "url": "http://www.voodootikigod.com"
+  }],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/JohanObrink/node-multiwii/issues"
@@ -25,6 +33,7 @@
   },
   "devDependencies": {
     "sinon-chai": "~2.5.0",
+    "proxyquire": "~0.5.3",
     "jshint-stylish": "~0.1.5",
     "chai": "~1.9.1",
     "grunt-mocha-test": "~0.10.0",
