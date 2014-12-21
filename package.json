@@ -14,22 +14,26 @@
     "multiwii",
     "copter"
   ],
-  "author": [{
-    "name": "Johan Öbrink",
-    "email": "johan.obrink@gmail.com",
-    "url": "http://terminaln00b.tumblr.com/"
-  },{
-    "name": "Chris Williams",
-    "email": "voodootikigod@gmail.com",
-    "url": "http://www.voodootikigod.com"
-  }],
+  "author": [
+    {
+      "name": "Johan Öbrink",
+      "email": "johan.obrink@gmail.com",
+      "url": "http://terminaln00b.tumblr.com/"
+    },
+    {
+      "name": "Chris Williams",
+      "email": "voodootikigod@gmail.com",
+      "url": "http://www.voodootikigod.com"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/JohanObrink/node-multiwii/issues"
   },
   "homepage": "https://github.com/JohanObrink/node-multiwii",
   "dependencies": {
-    "q": "~1.0.1"
+    "q": "~1.0.1",
+    "when": "^3.6.4"
   },
   "devDependencies": {
     "sinon-chai": "~2.5.0",
