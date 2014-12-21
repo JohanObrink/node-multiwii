@@ -9,25 +9,18 @@ chai.use(require('sinon-chai'));
 describe('\u2b50  messages', function () {
 
 
-  var Wii, multiwii, serialport, sandbox, port, wii;
+  var Wii, multiwii, proxyConnection, sandbox, port, wii;
 
   beforeEach(function () {
-    port = {
+    proxyConnection = {
       on: sinon.stub(),
-      removeListener: sinon.stub()
-    };
-    serialport = {
-      list: sinon.stub(),
-      parsers: {
-        raw: {}
-      },
-      SerialPort: sinon.stub().returns(port)
+      removeListener: sinon.stub(),
+      write: sinon.stub(),
+      close: sinon.spy()
     };
     Wii = multiwii;
     sandbox = sinon.sandbox.create();
-
-    wii = new Wii();
-    wii.connect('/dev/mupp');
+    wii = new Wii(proxyConnection);
     port.on.withArgs('open').yield();
   });
 
@@ -40,7 +33,7 @@ describe('\u2b50  messages', function () {
     it('parses the message correctly', function () {
       var listener = sinon.spy();
       wii.on('ident', listener);
-      port.on.withArgs('data').yield(new Buffer([0, 0, 0, 7, 100, 2, 1, 1, 0, 0, 0, 0]));
+      proxyConnection.on.withArgs('data').yield(new Buffer([0, 0, 0, 7, 100, 2, 1, 1, 0, 0, 0, 0]));
       expect(listener).calledWith({
         version: 2,
         multitype: 'TRI',
