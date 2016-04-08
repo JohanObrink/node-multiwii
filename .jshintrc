@@ -14,6 +14,7 @@
   "node": true,
   "esnext": true,
   "maxcomplexity": 6,
+  "asi":  true,
   "globals": {
     "describe": true,
     "xdescribe": true,

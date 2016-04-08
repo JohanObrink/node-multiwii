@@ -1,290 +1,274 @@
+'use strict'
 /*jshint expr: true*/
 
-var chai = require('chai'),
-  expect = chai.expect,
-  sinon = require('sinon'),
-  proxyquire = require('proxyquire');
+const chai = require('chai')
+const expect = chai.expect
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 
-chai.use(require('sinon-chai'));
+chai.use(require('sinon-chai'))
 
-describe('\u2b50  MultiWii', function () {
-  var multiwii, Wii, serialport, sandbox, port;
-  beforeEach(function () {
+describe('\u2b50  MultiWii', () => {
+  let multiwii, Wii, serialport, sandbox, port
+  beforeEach(() => {
     port = {
       on: sinon.stub(),
+      once: sinon.stub(),
       removeListener: sinon.stub(),
+      removeAllListeners: sinon.stub(),
       write: sinon.stub(),
       close: sinon.spy()
-    };
+    }
+    port.on.returns(port)
+    port.once.returns(port)
+    port.removeListener.returns(port)
+    port.removeAllListeners.returns(port)
+
     serialport = {
       list: sinon.stub(),
       parsers: {
         raw: {}
       },
       SerialPort: sinon.stub().returns(port)
-    };
-    multiwii = proxyquire('../../lib/wii', {
+    }
+    multiwii = proxyquire(process.cwd() + '/lib/wii', {
       'serialport': serialport
-    });
-    Wii = multiwii.Wii;
-    sandbox = sinon.sandbox.create();
-    sandbox.stub(process, 'nextTick').yields();
-  });
-  afterEach(function () {
-    sandbox.restore();
-  });
+    })
+    Wii = multiwii.Wii
+  })
 
-  it('returns a reference to Wii', function () {
+  it('returns a reference to Wii', () => {
     expect(Wii).to.be.a('function');
     expect(new Wii()).to.instanceof(Wii);
   });
 
-  describe('constructor', function () {
-    it('sets option values from arg obj', function () {
-      var wii = new Wii({port:'/dev/device'});
-      expect(wii.options.port).to.equal('/dev/device');
-    });
-    it('sets option port from arg string', function () {
-      var wii = new Wii('/dev/device');
-      expect(wii.options.port).to.equal('/dev/device');
-    });
-    it('sets defaults', function () {
-      var wii = new Wii();
-      expect(wii.options.baudrate).to.equal(115200);
-      expect(wii.options.databits).to.equal(8);
-      expect(wii.options.stopbits).to.equal(1);
-      expect(wii.options.parity).to.equal('none');
-      expect(wii.options.parser).to.eql(serialport.parsers.raw);
-    });
-    it('merges with defaults', function () {
-      var wii = new Wii({ parity: 'even', parser: 'herro' });
-      expect(wii.options.baudrate).to.equal(115200);
-      expect(wii.options.databits).to.equal(8);
-      expect(wii.options.stopbits).to.equal(1);
-      expect(wii.options.parity).to.equal('even');
-      expect(wii.options.parser).to.equal('herro');
-    });
-  });
+  describe('constructor', () => {
+    it('sets option values from arg obj', () => {
+      let wii = new Wii({port: '/dev/device'})
+      expect(wii.options.port).to.equal('/dev/device')
+    })
+    it('sets option port from arg string', () => {
+      let wii = new Wii('/dev/device')
+      expect(wii.options.port).to.equal('/dev/device')
+    })
+    it('sets defaults', () => {
+      let wii = new Wii()
+      expect(wii.options.baudrate).to.equal(115200)
+      expect(wii.options.databits).to.equal(8)
+      expect(wii.options.stopbits).to.equal(1)
+      expect(wii.options.parity).to.equal('none')
+      expect(wii.options.parser).to.eql(serialport.parsers.raw)
+    })
+    it('merges with defaults', () => {
+      let wii = new Wii({ parity: 'even', parser: 'herro' })
+      expect(wii.options.baudrate).to.equal(115200)
+      expect(wii.options.databits).to.equal(8)
+      expect(wii.options.stopbits).to.equal(1)
+      expect(wii.options.parity).to.equal('even')
+      expect(wii.options.parser).to.equal('herro')
+    })
+  })
 
-  describe('list', function () {
-    it('calls serialport to list available devices', function () {
-      var listener = sinon.spy();
-      multiwii.list(listener);
-      expect(serialport.list).calledOnce;
-    });
-    it('calls callback with error on fail', function () {
-      var listener = sinon.spy();
-      multiwii.list(listener);
-      serialport.list.yield('error');
-      expect(listener).calledWith('error');
-    });
-    it('calls callback with list on success', function () {
-      var listener = sinon.spy();
-      multiwii.list(listener);
-      serialport.list.yield(null, []);
-      expect(listener).calledWith(null, []);
-    });
-    it('returns a promise if no callback is passed in', function () {
-      var promise = multiwii.list();
-      expect(promise).to.be.an('object');
-      expect(promise.then).to.be.a('function');
-      expect(promise.catch).to.be.a('function');
-      expect(promise.finally).to.be.a('function');
-    });
-    it('resolves the promise when serialport.list succeeds', function () {
-      var success = sinon.spy();
-      var fail = sinon.spy();
-      multiwii.list().then(success).catch(fail);
-      serialport.list.yield(null, []);
-      expect(success).called;
-      expect(success).calledWith([]);
-      expect(fail).not.called;
-    });
-    it('rejects the promise when serialport.list fails', function () {
-      var success = sinon.spy();
-      var fail = sinon.spy();
-      multiwii.list().then(success).catch(fail);
-      serialport.list.yield('error');
-      expect(success).not.called;
-      expect(fail).calledWith('error');
-    });
-  });
+  describe('list', () => {
+    it('resolves the promise when serialport.list succeeds', () => {
+      serialport.list.yields(null, [])
 
-  describe('#connect', function () {
-    it('uses port from constructor', function () {
-      var wii = new Wii({ port: { comName: '/foo/bar' }});
-      wii.connect();
-      expect(serialport.SerialPort).calledOnce;
-      expect(serialport.SerialPort).calledWithNew;
-      expect(serialport.SerialPort).calledWith('/foo/bar', {
-        baudrate: 115200,
-        databits: 8,
-        stopbits: 1,
-        parity: 'none',
-        parser: serialport.parsers.raw
-      });
-    });
-    it('uses port from argument object', function () {
-      var wii = new Wii({ port: { comName: '/foo/bar' }});
-      wii.connect({ comName: '/herp/derp' });
-      expect(serialport.SerialPort).calledOnce;
-      expect(serialport.SerialPort).calledWithNew;
-      expect(serialport.SerialPort).calledWith('/herp/derp', {
-        baudrate: 115200,
-        databits: 8,
-        stopbits: 1,
-        parity: 'none',
-        parser: serialport.parsers.raw
-      });
-    });
-    it('uses port from argument string', function () {
-      var wii = new Wii({ port: { comName: '/foo/bar' }});
-      wii.connect('/herp/derp');
-      expect(serialport.SerialPort).calledOnce;
-      expect(serialport.SerialPort).calledWithNew;
-      expect(serialport.SerialPort).calledWith('/herp/derp', {
-        baudrate: 115200,
-        databits: 8,
-        stopbits: 1,
-        parity: 'none',
-        parser: serialport.parsers.raw
-      });
-    });
-    it('throws an error if no port is specified', function () {
-      var wii = new Wii();
-      expect(function () { wii.connect(); }).to.throw(Error, /no port specified/);
-    });
-    it('uses options from argument', function () {
-      var wii = new Wii();
-      wii.connect('/herp/derp', { parity: 'even' });
-      expect(serialport.SerialPort).calledOnce;
-      expect(serialport.SerialPort).calledWithNew;
-      expect(serialport.SerialPort).calledWith('/herp/derp', {
-        baudrate: 115200,
-        databits: 8,
-        stopbits: 1,
-        parity: 'even',
-        parser: serialport.parsers.raw
-      });
-    });
-    it('returns a promise', function () {
-      var wii = new Wii();
-      var promise = wii.connect('/dev/derp');
-      expect(promise).to.be.an('object');
-      expect(promise.then).to.be.a('function');
-      expect(promise.catch).to.be.a('function');
-      expect(promise.finally).to.be.a('function');
-    });
-    it('adds listeners', function () {
-      var wii = new Wii();
-      wii.connect('/dev/derp');
-      expect(port.on).calledTwice;
-      expect(port.on.withArgs('error')).calledOnce;
-      expect(port.on.withArgs('open')).calledOnce;
-    });
-    it('resolves promise on open', function () {
-      var success = sinon.spy();
-      var fail = sinon.spy();
-      var wii = new Wii();
-      wii.connect('/dev/derp').then(success).catch(fail);
-      port.on.withArgs('open').yield();
-      expect(success).calledOnce;
-      expect(success).calledWith(wii);
-      expect(fail).not.called;
-    });
-    it('clears and removes connect failed listener', function () {
-      var success = sinon.spy();
-      var fail = sinon.spy();
-      var wii = new Wii();
-      wii.connect('/dev/derp').then(success).catch(fail);
-      var _onError = wii._onError;
-      port.on.withArgs('error').yield('bork');
-      expect(port.removeListener).calledWith('error', _onError);
-      expect(wii._onError).to.not.exist;
-    });
-    it('rejects promise on error', function () {
-      var success = sinon.spy();
-      var fail = sinon.spy();
-      var wii = new Wii();
-      wii.connect('/dev/derp').then(success).catch(fail);
-      port.on.withArgs('error').yield('bork');
-      expect(success).not.called;
-      expect(fail).calledOnce;
-      expect(fail).calledWith('bork');
-    });
+      return multiwii.list()
+        .then(result => {
+          expect(result).to.eql([])
+        })
+    })
+    it('rejects the promise when serialport.list fails', () => {
+      serialport.list.yields('error');
 
-    describe('#onOpen', function () {
-      var wii, _onConnect;
+      return multiwii.list()
+        .then(result => Promise.reject(result))
+        .catch(error => {
+          expect(error).to.equal('error')
+        })
+    })
+  })
 
-      beforeEach(function () {
-        wii = new Wii();
-        wii.connect('/dev/derp');
-        _onConnect = wii._onConnect;
-        port.on.withArgs('open').yield();
-      });
+  describe('#connect', () => {
+    it('uses port from constructor', () => {
+      let wii = new Wii({port: {comName: '/foo/bar'}})
 
-      it('sets connected property to true', function () {
-        expect(wii.connected).to.be.true;
-      });
+      wii.connect()
 
-      it('adds listener for data', function () {
-        expect(port.on.withArgs('data')).calledOnce;
-      });
+      expect(serialport.SerialPort)
+        .calledOnce
+        .calledWithNew
+        .calledWith('/foo/bar', {
+          baudrate: 115200,
+          databits: 8,
+          stopbits: 1,
+          parity: 'none',
+          parser: serialport.parsers.raw
+        })
+    })
+    it('uses port from argument object', () => {
+      let wii = new Wii({port: {comName: '/foo/bar'}})
 
-      it('clears and removes connect listener', function () {
-        expect(port.removeListener).calledWith('open', _onConnect);
-        expect(wii._onConnect).to.not.exist;
-      });
+      wii.connect({comName: '/herp/derp'})
 
-      describe('#onError', function () {
-        it('emits error', function () {
-          var listener = sinon.spy();
-          wii.on('error', listener);
-          var err = new Error();
-          port.on.withArgs('error').yield(err);
-          expect(listener).calledOnce;
-        });
-      });
+      expect(serialport.SerialPort)
+        .calledOnce
+        .calledWithNew
+        .calledWith('/herp/derp', {
+          baudrate: 115200,
+          databits: 8,
+          stopbits: 1,
+          parity: 'none',
+          parser: serialport.parsers.raw
+        })
+    })
+    it('uses port from argument string', () => {
+      let wii = new Wii({port: {comName: '/foo/bar'}})
 
-      describe('\u26a1 disconnect', function () {
+      wii.connect('/herp/derp')
+
+      expect(serialport.SerialPort)
+        .calledOnce
+        .calledWithNew
+        .calledWith('/herp/derp', {
+          baudrate: 115200,
+          databits: 8,
+          stopbits: 1,
+          parity: 'none',
+          parser: serialport.parsers.raw
+        })
+    })
+    it('throws an error if no port is specified', () => {
+      let wii = new Wii()
+
+      return wii.connect()
+        .then(r => Promise.reject(r))
+        .catch(err => {
+          expect(err.toString()).to.equal('Error: no port specified')
+        })
+    })
+    it('uses options from argument', () => {
+      let wii = new Wii()
+
+      wii.connect('/herp/derp', {parity: 'even'})
+
+      expect(serialport.SerialPort)
+        .calledOnce
+        .calledWithNew
+        .calledWith('/herp/derp', {
+          baudrate: 115200,
+          databits: 8,
+          stopbits: 1,
+          parity: 'even',
+          parser: serialport.parsers.raw
+        })
+    })
+    it('adds listeners', () => {
+      let wii = new Wii()
+
+      wii.connect('/dev/derp')
+
+      expect(port.once)
+        .calledTwice
+        .calledWith('open')
+        .calledWith('error')
+    })
+    it('resolves port on open', () => {
+      let wii = new Wii()
+
+      let connect = wii.connect('/dev/derp')
+        .then(p => {
+          expect(p).to.eql(port)
+        })
+      port.once.withArgs('open').yield(port)
+      return connect
+    })
+    it('clears and removes connect failed on success', () => {
+      let wii = new Wii()
+
+      let connect = wii.connect('/dev/derp')
+        .then(() => {
+          expect(port.removeListener).calledWith('error')
+        })
+      port.once.withArgs('open').yield()
+
+      return connect
+    });
+    it('rejects promise on error', () => {
+      let wii = new Wii()
+
+      let connect = wii.connect('/dev/derp')
+        .then(res => Promise.reject(res))
+        .catch(err => {
+          expect(err).to.equal('bork')
+        })
+      port.once.withArgs('error').yield('bork')
+
+      return connect
+    });
+    describe('#onOpen', () => {
+      let wii
+      beforeEach(() => {
+        wii = new Wii()
+        let connect = wii.connect('/dev/derp')
+        port.once.withArgs('open').yield()
+        return connect
+      })
+      it('sets connected property to true', () => {
+        expect(wii.connected).to.be.true
+      })
+      it('adds listeners', () => {
+        expect(port.on)
+          .calledTwice
+          .calledWith('data')
+          .calledWith('error')
+      })
+      describe('#onError', () => {
+        it('emits error', () => {
+          let listener = sinon.spy()
+          wii.on('error', listener)
+
+          var err = new Error()
+          port.on.withArgs('error').yield(err)
+
+          expect(listener).calledOnce
+        })
+      })
+      describe('\u26a1 disconnect', () => {
+        let listener
+        beforeEach(() => {
+          listener = sinon.spy()
+          wii.on('disconnect', listener)
+          port.on.withArgs('error').yield({ errno: -1, code: 'UNKNOWN' })
+        })
+        it('emits disconnect', () => {
+          expect(listener).calledOnce
+        })
+        it('sets connected to false', () => {
+          expect(wii.connected).to.be.false
+        })
+        it('clears listeners', () => {
+          expect(port.removeAllListeners).calledOnce
+        })
+      })
+      describe('\u26a1 data', () => {
         var listener;
 
-        beforeEach(function () {
-          listener = sinon.spy();
-          wii.on('disconnect', listener);
-          port.on.withArgs('error').yield({ errno: -1, code: 'UNKNOWN' });
-        });
-
-        it('emits disconnect', function () {
-          expect(listener).calledOnce;
-        });
-        it('sets connected to false', function () {
-          expect(wii.connected).to.be.false;
-        });
-        it('clears listeners', function () {
-          expect(port.removeListener).calledWith('error', wii.onError);
-          expect(port.removeListener).calledWith('data', wii.onData);
-        });
-      });
-
-      describe('\u26a1 data', function () {
-        var listener;
-
-        beforeEach(function () {
+        beforeEach(() => {
           listener = sinon.spy();
           wii.on('data', listener);
         });
 
-        it('emits raw data', function () {
+        it('emits raw data', () => {
           var buffer = new Buffer([0xff, 0xfe]);
           port.on.withArgs('data').yield(buffer);
           expect(listener).calledOnce;
           expect(listener).calledWith(buffer);
         });
       });
-    
-      describe('#send', function () {
-        it('sends out messages correctly', function () {
+
+      describe('#send', () => {
+        it('sends out messages correctly', () => {
           wii.send(105);
           var expected = Array.prototype.slice.call(new Buffer([0x24, 0x4D, 0x3C, 0, 105, 105, 0]));
           var sent = Array.prototype.slice.call(port.write.getCall(0).args[0]);
@@ -293,15 +277,15 @@ describe('\u2b50  MultiWii', function () {
         });
       });
 
-      describe('#calculateChecksum', function () {
-        it('can calculate the checksum', function () {
+      describe('#calculateChecksum', () => {
+        it('can calculate the checksum', () => {
           var buffer = new Buffer(40);
           var data = new Buffer([0x24, 0x4d, 0x3e, 0x0a, 0x65, 0x28, 0x0b, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00]);
           data.copy(buffer, 0);
           var checksum = wii.calculateChecksum(buffer);
           expect(checksum).to.equal(0x6d);
         });
-        it('can calculate another checksum', function () {
+        it('can calculate another checksum', () => {
           var buffer = new Buffer(40);
           var data = new Buffer([0x24, 0x4D, 0x3C, 0, 105]);
           data.copy(buffer, 0);

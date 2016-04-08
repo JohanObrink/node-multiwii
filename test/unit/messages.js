@@ -1,42 +1,46 @@
+'use strict'
 /*jshint expr: true*/
 
-var chai = require('chai'),
-  expect = chai.expect,
-  sinon = require('sinon'),
-  proxyquire = require('proxyquire');
+const chai = require('chai')
+const expect = chai.expect
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 
-chai.use(require('sinon-chai'));
+chai.use(require('sinon-chai'))
 
-describe('\u2b50  messages', function () {
-  var Wii, multiwii, serialport, sandbox, port, wii;
-  beforeEach(function () {
+describe('\u2b50  messages', () => {
+  let Wii, multiwii, serialport, sandbox, port, wii
+  beforeEach(() => {
     port = {
       on: sinon.stub(),
-      removeListener: sinon.stub()
-    };
+      once: sinon.stub(),
+      removeListener: sinon.stub(),
+      removeAllListeners: sinon.stub()
+    }
+    port.on.returns(port)
+    port.once.returns(port)
+    port.removeListener.returns(port)
+    port.removeAllListeners.returns(port)
     serialport = {
       list: sinon.stub(),
       parsers: {
         raw: {}
       },
       SerialPort: sinon.stub().returns(port)
-    };
+    }
     multiwii = proxyquire('../../lib/wii', {
       'serialport': serialport
-    });
-    Wii = multiwii.Wii;
-    sandbox = sinon.sandbox.create();
+    })
+    Wii = multiwii.Wii
 
-    wii = new Wii();
-    wii.connect('/dev/mupp');
-    port.on.withArgs('open').yield();
-  });
-  afterEach(function () {
-    sandbox.restore();
-  });
+    wii = new Wii()
+    let connect = wii.connect('/dev/mupp')
+    port.once.withArgs('open').yield()
 
-  describe('ident', function () {
-    it('parses the message correctly', function () {
+    return connect
+  })
+  describe('ident', () => {
+    it('parses the message correctly', () => {
       var listener = sinon.spy();
       wii.on('ident', listener);
       port.on.withArgs('data').yield(new Buffer([0, 0, 0, 7, 100, 2, 1, 1, 0, 0, 0, 0]));
@@ -49,14 +53,14 @@ describe('\u2b50  messages', function () {
     });
   });
 
-  describe('rc', function () {
-    it('sends the read command correctly', function () {
+  describe('rc', () => {
+    it('sends the read command correctly', () => {
       sinon.stub(wii, 'send');
       wii.read('rc');
       expect(wii.send).calledWith(105);
       wii.send.restore();
     });
-    it('parses the message correctly', function () {
+    it('parses the message correctly', () => {
       var listener = sinon.spy();
       wii.on('rc', listener);
       port.on.withArgs('data').yield(new Buffer([0, 0, 0, 16, 105,
@@ -82,8 +86,8 @@ describe('\u2b50  messages', function () {
     });
   });
 
-  describe('status', function () {
-    it('parses the message correctly', function () {
+  describe('status', () => {
+    it('parses the message correctly', () => {
       var listener = sinon.spy();
       wii.on('status', listener);
       port.on.withArgs('data').yield(new Buffer([0, 0, 0, 11, 101,
@@ -101,8 +105,8 @@ describe('\u2b50  messages', function () {
     });
   });
 
-  describe('servo', function () {
-    it('parses the message correctly', function () {
+  describe('servo', () => {
+    it('parses the message correctly', () => {
       var listener = sinon.spy();
       wii.on('servo', listener);
       port.on.withArgs('data').yield(new Buffer([0, 0, 0, 16, 103,
@@ -119,8 +123,8 @@ describe('\u2b50  messages', function () {
     });
   });
 
-  describe('motor', function () {
-    it('parses the message correctly', function () {
+  describe('motor', () => {
+    it('parses the message correctly', () => {
       var listener = sinon.spy();
       wii.on('motor', listener);
       port.on.withArgs('data').yield(new Buffer([0, 0, 0, 16, 104,
@@ -136,5 +140,5 @@ describe('\u2b50  messages', function () {
       expect(listener).calledWith([256, 257, 258, 259, 260, 261, 262, 263]);
     });
   });
-  
+
 });
